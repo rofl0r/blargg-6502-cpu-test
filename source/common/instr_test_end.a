@@ -17,6 +17,13 @@ main:	ldx #$A2
 	jsr check_result
 	
 	lda instrs_idx
+; test_index_invalid:
+	and #3
+	beq @index_is_good
+	.byte $02 ; KIL
+@index_is_good:
+	lda instrs_idx
+
 	clc
 	adc #4
 	cmp #instrs_size
