@@ -8,7 +8,9 @@
     .if (n) < 0 .or (n) > 1100
 	.error "time out of range"
     .endif
-    delay ((n)*1789773+500)/1000
+    .if !BUILD_NON_NES
+        delay ((n)*1789773+500)/1000
+    .endif
 .endmacro
 
 
@@ -19,13 +21,16 @@
     .if (n) < 0 .or (n) > 100000
 	.error "time out of range"
     .endif
-    delay ((n)*17898+5000)/10000
+    .if !BUILD_NON_NES
+         delay ((n)*17898+5000)/10000
+    .endif
 .endmacro
 
 
 ; Delays n clocks, from 2 to 16777215
 ; Preserved: X, Y
 .macro delay n
+    .if !BUILD_NON_NES
     .if (n) < 0 .or (n) = 1 .or (n) > 16777215
 	.error "Delay out of range"
     .endif
@@ -40,8 +45,10 @@
 	jsr delay_a19_clocks
 	delay_256 ((n)-27)
     .endif
+    .endif
 .endmacro
 
+.if !BUILD_NON_NES
 
 ; Delays A+19 clocks (excluding JSR)
 ; Preserved: X, Y
@@ -101,8 +108,10 @@ delay_65536a_clocks_:
 	bne :-
 	rts
 
+.endif
 
 .macro delay_inline n
+    .if !BUILD_NON_NES
     .if n = 7 .or n >= 9
 	pha
 	pla
@@ -116,22 +125,26 @@ delay_65536a_clocks_:
     .elseif n > 0
 	.error "delay_short internal error"
     .endif
+    .endif
 .endmacro
 
 .macro delay_unrolled n
+    .if !BUILD_NON_NES
     .if n & 1
 	lda <0
 	jsr delay_unrolled_-((n-15)/2)
     .else
 	jsr delay_unrolled_-((n-12)/2)
     .endif
+    .endif
 .endmacro
-	
+
 	.res 7,$EA ; NOP
 delay_unrolled_:
 	rts
 
 .macro delay_256 n
+    .if !BUILD_NON_NES
     .if >n
 	lda #>n
 	jsr delay_256a_clocks_
@@ -139,5 +152,6 @@ delay_unrolled_:
     .if ^n
 	lda #^n
 	jsr delay_65536a_clocks_
+    .endif
     .endif
 .endmacro

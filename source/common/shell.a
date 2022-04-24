@@ -8,7 +8,7 @@ run_main:
 	
 	; Establish consistent environment before
 	; running main
-	jsr wait_vbl
+	; jsr wait_vbl
 	lda #0
 	sta SNDMODE
 	tax
@@ -25,10 +25,10 @@ run_main:
 exit:
 	; Disable IRQ and NMI
 	sei
-.if !BUILD_NSF
-	ldx #0
-	stx PPUCTRL
-.endif
+;.if !BUILD_NSF
+;	ldx #0
+;	stx PPUCTRL
+;.endif
 	
 	; Reset stack
 	dex
@@ -57,7 +57,7 @@ exit:
 
 ; Default NMI and IRQ handlers
 
-.ifndef CUSTOM_NMI
+.if !CUSTOM_NMI
 zp_byte	nmi_count
 
 BEGIN_NMI
@@ -74,7 +74,7 @@ wait_nmi:
 	rts
 .endif
 
-.ifndef CUSTOM_IRQ
+.if !CUSTOM_IRQ
 BEGIN_IRQ
 	bit SNDCHN	; clear APU IRQ flag
 	rti

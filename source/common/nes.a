@@ -43,8 +43,8 @@ zp_byte addrh ; never used directly, only via addr+1
 	ldx #$FF
 	txs
 	lda #0
-	
-.if !BUILD_NSF
+
+.if (!BUILD_NSF) || (!BUILD_NON_NES)
 	; Init PPU
 	sta PPUCTRL
 	sta PPUMASK
@@ -62,7 +62,7 @@ zp_byte addrh ; never used directly, only via addr+1
 	dex
 	bpl @clear_page
 	
-.if !BUILD_NSF
+.if (!BUILD_NSF) && (!BUILD_NON_NES)
 	; Let PPU initialize
 :	bit PPUSTATUS
 	bpl :-

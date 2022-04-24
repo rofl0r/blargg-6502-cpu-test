@@ -1,5 +1,23 @@
-NES CPU Tests
+<strike>NES</strike> 6502/Ricoh 2A03 CPU Tests
 -------------
+
+this repo contains blargg's NES cpu testsuite, modified so it can be executed
+like dormann's 6502 testsuite on a raw 6502 emulator.
+this is the only cpu testsuite i found that exercises undocumented opcodes.
+
+build:
+install cc65, then run make.
+
+usage:
+- disable BCD in your 6502 emulator so it behaves like the Ricoh 2A03
+- if you want output, add some code that catches the multi-byte nop opcode 0xfc
+  followed by 0x13, 0x37, which i repurposed as "syscall" opcode to signal
+  the emulator that a byte to output to stdout waits at 0x2000.
+- the entrypoint is at 0x8004, but you can also just jump to the reset vector.
+
+
+original README follows.
+
 These test most of the instruction behavior fairly thoroughly, including unofficial instructions. Failing instructions are listed by their opcode and name. Serious errors in basic opcodes might cause massive erroneous errors.
 
 cpu.nes			Tests all instructions

@@ -4,59 +4,72 @@
 ; Clears VBL flag then waits for it to be set
 ; Preserved: A, X, Y
 wait_vbl:
+.if !BUILD_NON_NES
 	bit PPUSTATUS
 :	bit PPUSTATUS
 	bpl :-
+.endif
 	rts
 
 
 ; Turns NMI on
 ; Preserved: X, Y
 nmi_on:
+.if !BUILD_NON_NES
 	lda #PPUCTRL_NMI
 	sta PPUCTRL
+.endif
 	rts
 
 
 ; Turns NMI off
 ; Preserved: X, Y
 nmi_off:
+.if !BUILD_NON_NES
 	lda #0
 	sta PPUCTRL
+.endif
 	rts
 
 
 ; Sets VRAM address to A * $100
 ; Preserved: X, Y
 set_vpage:
+.if !BUILD_NON_NES
 	bit PPUSTATUS
 	sta PPUADDR
 	lda #0
 	sta PPUADDR
+.endif
 	rts
 
 
 ; Sets VRAM address to A * $100 + X
 ; Preserved: A, X, Y
 set_vaddr:
+.if !BUILD_NON_NES
 	bit PPUSTATUS
 	sta PPUADDR
 	stx PPUADDR
+.endif
 	rts
 
 
 ; Sets X and Y scroll
 ; Preserved: A, X, Y
 set_vscroll:
+.if !BUILD_NON_NES
 	bit PPUSTATUS
 	stx PPUSCROLL
 	sty PPUSCROLL
+.endif
 	rts
 
 
 ; Turns off NMI and disables BG and sprites
 ; Preserved: A, X, Y
 disable_ppu:
+.if !BUILD_NON_NES
 	pha
 	lda #0
 	sta PPUCTRL
@@ -65,22 +78,26 @@ disable_ppu:
 	sta PPUADDR
 	sta PPUADDR
 	pla
+.endif
 	rts
 
 
 ; Sets sprite memory to $FF
 ; Preserved: Y
 clear_sprites:
+.if !BUILD_NON_NES
 	lda #$ff
 	ldx #0
 :	sta SPRDATA
 	dex
 	bne :-
+.endif
 	rts
 
 
 ; Clears/fills nametable with 0/A and clear attributes to 0
 clear_nametable:
+.if !BUILD_NON_NES
 	lda #0
 fill_nametable:
 	pha
@@ -99,17 +116,21 @@ fill_nametable:
 :	sta PPUDATA
 	dex
 	bne :-
+.endif
 	rts
 
 
 ; Clears/fills VRAM with 0/A
 clear_vram:
+.if !BUILD_NON_NES
 	lda #0
 fill_vram:
 	ldx #0
 	ldy #$24
 	bne fill_vram_
+.endif
 
+.if !BUILD_NON_NES
 
 ; Clears/fills CHR with 0/A
 fill_chr1:
@@ -139,3 +160,5 @@ fill_vram_:
 	dey
 	bne :-
 	rts
+
+.endif

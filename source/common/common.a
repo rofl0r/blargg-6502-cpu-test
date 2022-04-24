@@ -9,20 +9,33 @@ COMMON_A = 1
 
 .include "macros.a"
 
+SET_DEFAULT BUILD_NON_NES,1
+.if BUILD_NON_NES
+SET_DEFAULT CUSTOM_NMI,0
+SET_DEFAULT CUSTOM_IRQ,0
+;SET_DEFAULT CUSTOM_NMI,1
+;SET_DEFAULT CUSTOM_IRQ,1
 SET_DEFAULT BUILD_NSF,0
 SET_DEFAULT BUILD_MULTI,0
 SET_DEFAULT BUILD_DEVCART,0
+SET_DEFAULT CUSTOM_HEADER,1
+.else
+SET_DEFAULT BUILD_NSF,1
+SET_DEFAULT BUILD_MULTI,0
+SET_DEFAULT BUILD_DEVCART,1
 SET_DEFAULT CUSTOM_HEADER,0
-SET_FLAG BUILD_ROM,(!BUILD_NSF) && (!BUILD_MULTI)
+.endif
+
+SET_FLAG BUILD_ROM,(!BUILD_NSF) && (!BUILD_MULTI) && (!BUILD_NON_NES)
 
 .include "nes.a"
 
 
 ;**** Header and reset handler
-.if (!CUSTOM_HEADER) && (!BUILD_MULTI)
+.if !BUILD_MULTI
 
 ; iNES ROM
-.if BUILD_ROM
+.if (BUILD_ROM) && (!CUSTOM_HEADER)
 .segment "HEADER"
 	.byte "NES",26
 	.byte 2,1 ; 32K PRG, 8K CHR
@@ -34,12 +47,18 @@ SET_FLAG BUILD_ROM,(!BUILD_NSF) && (!BUILD_MULTI)
 
 
 ; NSF
-.elseif BUILD_NSF
+.elseif (BUILD_NSF) && (!CUSTOM_HEADER)
 .segment "HEADER"
 	.byte "NESM",26,1,1,1
 	.word $E000,reset,nsf_play
 .segment "VECTORS"
 	.word 0,0,0,0,0,irq
+.elseif BUILD_NON_NES
+.segment "VECTORS"
+	.word 0,0,0,nmi,reset,irq
+;	.word 0,0,0,0,reset,0
+;.segment "KICK"
+;	jmp ($fffc)
 .endif
 
 
@@ -55,10 +74,10 @@ reset:	init_nes
 
 .endif
 
-.if !CUSTOM_HEADER
+;.if !CUSTOM_HEADER
     .define BEGIN_NMI nmi:
     .define BEGIN_IRQ irq:
-.endif
+;.endif
 
 
 ;**** Common modules
@@ -72,13 +91,13 @@ reset:	init_nes
 	.include "serial.a"
 .endif
 
-.if !BUILD_NSF
+.if (!BUILD_NSF) && (!BUILD_NON_NES)
 	.include "ppu.a"
 .endif
 
 
 ;**** Building normal ROM or NSF
-.if BUILD_NSF || (BUILD_ROM && (!BUILD_DEVCART))
+.if BUILD_NSF || (BUILD_ROM && (!BUILD_DEVCART) && (!BUILD_NON_NES))
 
 .if !BUILD_NSF
 	.include "console.a"
@@ -120,13 +139,13 @@ report_value:
 
 
 ;**** Building devcart
-.elseif BUILD_DEVCART
+.elseif (BUILD_DEVCART) || (BUILD_NON_NES)
 NO_CONSOLE = 1
 print_char_  = serial_write
 report_value = print_a
 startup:
 	jsr serial_init
-	delay_msec 45
+	; delay_msec 45
 	jmp run_main
 
 exit_:	; Tell host to stop capturing serial
@@ -134,8 +153,11 @@ exit_:	; Tell host to stop capturing serial
 	jsr serial_write
 
 	; Run bootloader
-	delay_msec 400
-	jsr wait_vbl
+	;delay_msec 400
+	;jsr wait_vbl
+.if BUILD_NON_NES
+	jmp * ; loop to same location like dormann 6502 tests as signal of end
+.endif
 	jmp $FF04
 
 
