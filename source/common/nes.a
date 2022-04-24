@@ -28,11 +28,13 @@ SNDMODE = $4017
 
 SNDMODE_NOIRQ	= $40
 
-; Temporaries 
-temp   = $A
-temp2  = $B
-temp3  = $C
-addr   = $E
+; Temporaries
+zp_byte temp
+zp_byte temp2
+zp_byte temp3
+zp_byte temp3h
+zp_byte addr
+zp_byte addrh ; never used directly, only via addr+1
 
 .macro init_nes
 	; Init NES
